@@ -1,0 +1,39 @@
+name: Test Brevo Email Delivery
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  email-test:
+    name: Send one clearly labelled test email
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - name: Send TEST email using Brevo
+        env:
+          EMAIL_ENABLED: 'true'
+          EMAIL_TO: ${{ secrets.POKEMON_EMAIL_TO }}
+          BREVO_API_KEY: ${{ secrets.POKEMON_BREVO_API_KEY }}
+          BREVO_SENDER: ${{ secrets.POKEMON_BREVO_SENDER }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          from monitor import email_message, send
+          product = {
+              "name": "Pokémon Drop Hunter email delivery check — NO ACTUAL DROP",
+              "url": "https://www.pokemon.com/uk/pokemon-tcg"
+          }
+          msg = email_message(
+              "[TEST] Pokémon Drop Hunter | Brevo Email Delivery",
+              "TEST EMAIL — NOT A REAL DROP",
+              product,
+              "This is a test of email delivery. No product stock or imminent drop is being claimed."
+          )
+          if not send(msg):
+              raise SystemExit("Brevo did not accept the test email. Check repository secrets and verified sender.")
+          PY
