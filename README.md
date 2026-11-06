@@ -22,3 +22,13 @@ This worker is intended for a **single-instance always-on service** with persist
 The daily email digest is a separate scheduled ChatGPT automation, not part of this worker.
 
 **Important:** Watchlist pages and selectors have not yet been calibrated against retailer live purchase flows. Running the service does not by itself guarantee accurate availability or immediate email delivery. The 2-minute sweep plus a second confirmation can introduce several minutes' delay.
+
+## £0/month stock scanning with GitHub Actions
+
+The [Free Pokemon Stock Watch](.github/workflows/stock-watch-free.yml) workflow schedules a scan every five minutes (UTC). Standard GitHub-hosted runners are free for public repositories. GitHub can delay or drop scheduled runs, so this is **best effort**, not guaranteed instantaneous stock monitoring.
+
+The scanner makes a second positive check within 12 seconds, and writes alert history to the separate public `monitor-state` branch. Run it manually under **Actions → Free Pokemon Stock Watch → Run workflow**. Retailer robots.txt policies and access restrictions are respected.
+
+**Email requires setup.** In **Settings → Secrets and variables → Actions**, add `POKEMON_EMAIL_TO` (recipient), `POKEMON_SMTP_USER` (email sender), and `POKEMON_SMTP_PASSWORD` (SMTP app password); `POKEMON_SMTP_FROM` is optional. Never commit passwords or paste them in chat. Until all three required secrets exist, the job runs in safe dry-run mode. Before setting these, calibrate the stock selectors for each retailer to avoid false-positive alerts.
+
+The separate ChatGPT daily-digest automation remains in place and unchanged.

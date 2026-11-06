@@ -9,3 +9,7 @@
 7. Only after a successful end-to-end alert test change `EMAIL_ENABLED=true`.
 
 Daily digests are handled by a separate ChatGPT automation and are not part of this Docker worker. Watchlist entries must use product-level URLs, and exact launch times must be verified before setting `verified_drop_at`.
+
+## Free hosting option: GitHub Actions
+
+Use [Free Pokemon Stock Watch](.github/workflows/stock-watch-free.yml) instead of Railway. See README for configuring GitHub repository secrets. The scheduled scans are best-effort and may be delayed. Do not activate emails until website stock parsing has been verified.

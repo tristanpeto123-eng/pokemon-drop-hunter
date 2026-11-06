@@ -223,6 +223,15 @@ def run_once(session: requests.Session, products: list[dict], state: dict) -> No
         try:
             signal = check_product(session, product)
             evaluate(product, entry, signal, now)
+            # During a scheduled scan, recheck positive stock once after a short gap.
+            if (os.getenv("RUN_ONCE", "false").lower() == "true"
+                and signal.state == "IN_STOCK"
+                and entry.get("known_stock") is not True
+                and entry.get("positive_checks") == 1):
+                time.sleep(max(10, int(os.getenv("SECOND_CONFIRMATION_SECONDS", "12"))))
+                confirm = check_product(session, product)
+                evaluate(product, entry, confirm, datetime.now(timezone.utc))
+                LOG.info("%s: confirmation %s", product["name"], confirm.state)
             LOG.info("%s: %s (%s)", product["name"], signal.state, signal.reason)
         except Exception:
             LOG.exception("Check failed for %s", product["id"])
@@ -240,6 +249,9 @@ def main() -> None:
         sys.exit("Expected a JSON list with unique product IDs")
     LOG.info("Watching %d pages every ~%d seconds; email_enabled=%s", len(products), POLL_SECONDS, EMAIL_ENABLED)
     with requests.Session() as session:
+        if os.getenv("RUN_ONCE", "false").lower() == "true":
+            run_once(session, products, read_state())
+            return
         while True:
             run_once(session, products, read_state())
             time.sleep(POLL_SECONDS + random.uniform(0, min(30, POLL_SECONDS / 5)))
