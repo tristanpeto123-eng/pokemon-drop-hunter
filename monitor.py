@@ -190,6 +190,13 @@ def evaluate(product: dict, entry: dict, signal: StockSignal, now: datetime) -> 
     if signal.state in ("UNKNOWN", "ACCESS_RESTRICTED"):
         entry["positive_checks"] = 0
         return
+    # Do not alert on initial stock. Only alert on a later OOS -> stock change.
+    if "known_stock" not in entry:
+        entry["known_stock"] = signal.state == "IN_STOCK"
+        entry["first_seen_at"] = now.isoformat()
+        entry["positive_checks"] = 0
+        entry["negative_checks"] = 0
+        return
     if signal.state == "OUT_OF_STOCK":
         entry["positive_checks"] = 0
         entry["negative_checks"] = entry.get("negative_checks", 0) + 1

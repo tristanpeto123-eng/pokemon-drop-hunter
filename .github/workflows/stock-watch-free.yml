@@ -36,17 +36,18 @@ jobs:
           RUN_ONCE: "true"
           SECOND_CONFIRMATION_SECONDS: "12"
           EMAIL_TO: ${{ secrets.POKEMON_EMAIL_TO }}
+          EMAIL_LIVE: ${{ vars.POKEMON_ENABLE_EMAIL }}
           SMTP_USER: ${{ secrets.POKEMON_SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.POKEMON_SMTP_PASSWORD }}
           SMTP_FROM: ${{ secrets.POKEMON_SMTP_FROM }}
           SMTP_HOST: "smtp.gmail.com"
           SMTP_PORT: "587"
         run: |
-          if [[ -n "$EMAIL_TO" && -n "$SMTP_USER" && -n "$SMTP_PASSWORD" ]]; then
+          if [[ "$EMAIL_LIVE" == "true" && -n "$EMAIL_TO" && -n "$SMTP_USER" && -n "$SMTP_PASSWORD" ]]; then
             export EMAIL_ENABLED=true
           else
             export EMAIL_ENABLED=false
-            echo "::notice::Dry-run: configure protected email secrets only after stock detection validation."
+            echo "::notice::Dry-run until secret credentials are configured AND POKEMON_ENABLE_EMAIL=true."
           fi
           python monitor.py
       - name: Save state to dedicated branch
@@ -65,7 +66,7 @@ jobs:
             git checkout -b monitor-state
           fi
           cp "$RUNNER_TEMP/pokemon-state.json" state.json
-          git add state.json
+          git add -f state.json
           if ! git diff --cached --quiet; then
             git commit -m "chore: refresh stock state [skip ci]"
             git push -u origin monitor-state

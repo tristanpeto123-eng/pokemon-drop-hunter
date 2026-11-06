@@ -32,3 +32,5 @@ The scanner makes a second positive check within 12 seconds, and writes alert hi
 **Email requires setup.** In **Settings → Secrets and variables → Actions**, add `POKEMON_EMAIL_TO` (recipient), `POKEMON_SMTP_USER` (email sender), and `POKEMON_SMTP_PASSWORD` (SMTP app password); `POKEMON_SMTP_FROM` is optional. Never commit passwords or paste them in chat. Until all three required secrets exist, the job runs in safe dry-run mode. Before setting these, calibrate the stock selectors for each retailer to avoid false-positive alerts.
 
 The separate ChatGPT daily-digest automation remains in place and unchanged.
+
+**Safety switch:** Email stays in dry-run mode until the GitHub Actions variable `POKEMON_ENABLE_EMAIL` is explicitly set to `true` after successful retailer stock validation. The first observation establishes a baseline without sending a spurious 'new drop' alert. GitHub stores monitoring observations on a separate public `monitor-state` branch.
