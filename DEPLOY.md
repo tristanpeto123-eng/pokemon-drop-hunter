@@ -5,7 +5,7 @@
 3. Attach a persistent Railway volume mounted at `/data`. Without it, duplicate-suppression history may vanish at restart.
 4. Inspect logs. Pages blocked by robots.txt, CAPTCHAs, 403/429 responses or invitation gates must remain restricted. Do not circumvent controls.
 5. Create and verify site-specific stock adapters/allowed sources for every retailer in the watchlist. Run controlled unavailable-to-available tests before production email.
-6. Add SMTP details securely (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_FROM`, `SMTP_PASSWORD`) or switch to an authorised transactional-email provider. For Gmail, an app password is required where supported; the ChatGPT Gmail connector does not automatically authenticate a deployed worker.
+6. Add Brevo transactional API credentials securely (`BREVO_API_KEY` and `BREVO_SENDER`) for a verified sender; this worker does not require Gmail SMTP or Gmail App Passwords.
 7. Only after a successful end-to-end alert test change `EMAIL_ENABLED=true`.
 
 Daily digests are handled by a separate ChatGPT automation and are not part of this Docker worker. Watchlist entries must use product-level URLs, and exact launch times must be verified before setting `verified_drop_at`.
@@ -16,4 +16,4 @@ Use [Free Pokemon Stock Watch](.github/workflows/stock-watch-free.yml) instead o
 
 The GitHub Action is dry-run by default, even after secrets are added. Set repository Actions variable `POKEMON_ENABLE_EMAIL=true` only once all product-page stock detections are verified.
 
-For GitHub Actions, use the Brevo API setup in README.md instead of SMTP settings. The Railway Docker option is legacy and its SMTP guidance needs updating before deploying there.
+For GitHub Actions and the optional Railway Docker worker, use the Brevo API sender setup in README.md. Email is disabled by default.
