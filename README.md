@@ -29,8 +29,20 @@ The [Free Pokemon Stock Watch](.github/workflows/stock-watch-free.yml) workflow 
 
 The scanner makes a second positive check within 12 seconds, and writes alert history to the separate public `monitor-state` branch. Run it manually under **Actions → Free Pokemon Stock Watch → Run workflow**. Retailer robots.txt policies and access restrictions are respected.
 
-**Email requires setup.** In **Settings → Secrets and variables → Actions**, add `POKEMON_EMAIL_TO` (recipient), `POKEMON_SMTP_USER` (email sender), and `POKEMON_SMTP_PASSWORD` (SMTP app password); `POKEMON_SMTP_FROM` is optional. Never commit passwords or paste them in chat. Until all three required secrets exist, the job runs in safe dry-run mode. Before setting these, calibrate the stock selectors for each retailer to avoid false-positive alerts.
+**Email requires setup.** See [Brevo API sender instructions](#free-email-sender-brevo-api-no-gmail-app-password) below. Keep credentials in GitHub Secrets and validate the retailer's stock adapter before turning on real emails.
 
 The separate ChatGPT daily-digest automation remains in place and unchanged.
 
 **Safety switch:** Email stays in dry-run mode until the GitHub Actions variable `POKEMON_ENABLE_EMAIL` is explicitly set to `true` after successful retailer stock validation. The first observation establishes a baseline without sending a spurious 'new drop' alert. GitHub stores monitoring observations on a separate public `monitor-state` branch.
+
+## Free email sender: Brevo API (no Gmail App Password)
+
+The five-minute GitHub workflow uses Brevo's transactional email API at `https://api.brevo.com/v3/smtp/email`, **not** Gmail SMTP. Brevo's free plan currently includes up to 300 sends per day, subject to account approval and provider terms. You must create an account and set up a verified sending identity; if using a free Gmail address, Brevo may rewrite the outbound From address. Deliverability is not guaranteed.
+
+1. Visit [Brevo](https://www.brevo.com/) and create a free account. Register/verify a sender under Settings → Senders, Domains, IPs. You can still receive Gmail messages normally. If Brevo requires a custom domain or refuses an unowned sender, you cannot bypass that requirement.
+2. Generate a **transactional API key** under SMTP & API → API Keys. Do not use an SMTP key.
+3. In this repository's Settings → Secrets and variables → Actions → Secrets, add `POKEMON_EMAIL_TO` (notification recipient), `POKEMON_BREVO_API_KEY` (API key) and `POKEMON_BREVO_SENDER` (exact Brevo-verified sender address). Never place keys in commit history, an issue, or chat.
+4. Run **Actions → Test Brevo Email Delivery → Run workflow** to send one email with **[TEST]** in the subject. This manual test intentionally does not enable the stock-alert job.
+5. After site-specific stock-detection checks are validated, set the repository Actions **variable** `POKEMON_ENABLE_EMAIL=true` to enable urgent notifications. Leave this unset until validation.
+
+The stock-watch workflow remains in dry-run mode until its email enable variable is `true` and all three secrets exist. The daily digest is separately delivered through the connected ChatGPT Gmail automation; changing the urgent-alert sender does not automatically change the digest's sender.
