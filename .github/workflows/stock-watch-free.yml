@@ -37,11 +37,8 @@ jobs:
           SECOND_CONFIRMATION_SECONDS: "12"
           EMAIL_TO: ${{ secrets.POKEMON_EMAIL_TO }}
           EMAIL_LIVE: ${{ vars.POKEMON_ENABLE_EMAIL }}
-          SMTP_USER: ${{ secrets.POKEMON_SMTP_USER }}
-          SMTP_PASSWORD: ${{ secrets.POKEMON_SMTP_PASSWORD }}
-          SMTP_FROM: ${{ secrets.POKEMON_SMTP_FROM }}
-          SMTP_HOST: "smtp.gmail.com"
-          SMTP_PORT: "587"
+          BREVO_API_KEY: ${{ secrets.POKEMON_BREVO_API_KEY }}
+          BREVO_SENDER: ${{ secrets.POKEMON_BREVO_SENDER }}
         run: |
           if [[ "$EMAIL_LIVE" == "true" && -n "$EMAIL_TO" && -n "$SMTP_USER" && -n "$SMTP_PASSWORD" ]]; then
             export EMAIL_ENABLED=true
