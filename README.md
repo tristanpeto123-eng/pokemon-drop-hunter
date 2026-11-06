@@ -10,18 +10,18 @@ UK Pokémon Trading Card Game availability monitoring prototype. Tracks selected
 - Low-rate polling (120 seconds plus jitter by default; minimum 60 seconds).
 - Respects robots.txt; does not bypass CAPTCHA, bot protection, login or invite-only sales.
 - Two consecutive positive checks before urgent email; two negative checks reset the restock trigger.
-- Duplicate-alert suppression (30-minute cooldown), persisted state, SMTP email with direct retailer links.
+- Duplicate-alert suppression (30-minute cooldown), persisted state, Brevo HTTPS API email with direct retailer links.
 - Unknown, restricted and rate-limited pages do not trigger stock claims.
 - Exact verified `verified_drop_at` ISO 8601 timestamp can trigger a 10-minute-before alert.
-- Seven unit tests in GitHub Actions.
+- Ten unit tests in GitHub Actions (execution result not yet verified).
 
 ## Deployment
 
-This worker is intended for a **single-instance always-on service** with persistent state. See [DEPLOY.md](DEPLOY.md). Configure environment variables from [.env.example](.env.example) using hosting provider secrets, never commit credentials.
+For £0 hosting, use the scheduled five-minute GitHub Actions job below. The alternative always-on server option is documented in [DEPLOY.md](DEPLOY.md). Configure environment variables from [.env.example](.env.example) using hosting provider secrets, never commit credentials.
 
 The daily email digest is a separate scheduled ChatGPT automation, not part of this worker.
 
-**Important:** Watchlist pages and selectors have not yet been calibrated against retailer live purchase flows. Running the service does not by itself guarantee accurate availability or immediate email delivery. The 2-minute sweep plus a second confirmation can introduce several minutes' delay.
+**Important:** Watchlist pages and selectors have not yet been calibrated against retailer live purchase flows. Running the service does not by itself guarantee accurate availability or immediate email delivery. The five-minute GitHub Actions schedule plus a second confirmation can introduce several minutes' delay.
 
 ## £0/month stock scanning with GitHub Actions
 
