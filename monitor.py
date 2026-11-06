@@ -8,7 +8,6 @@ import json
 import logging
 import os
 import random
-import smtplib
 import sys
 import time
 from dataclasses import dataclass
@@ -130,7 +129,7 @@ def email_message(subject: str, title: str, product: dict, detail: str) -> Email
     if urlsplit(url).scheme != "https":
         raise ValueError("Expected HTTPS product link")
     msg = EmailMessage()
-    msg["From"] = os.getenv("SMTP_FROM") or os.getenv("SMTP_USER", "")
+    msg["From"] = os.getenv("BREVO_SENDER", "")
     msg["To"] = EMAIL_TO
     msg["Subject"] = subject
     msg.set_content(f"{title}\n{name}\n{detail}\n\nDirect retailer link: {url}\n\nStock is not guaranteed.")
@@ -143,24 +142,41 @@ def email_message(subject: str, title: str, product: dict, detail: str) -> Email
 
 
 def send(msg: EmailMessage) -> bool:
+    """Submit a notification to the Brevo transactional email API.
+
+    API acceptance is not proof of final inbox delivery.
+    """
     if not EMAIL_ENABLED:
         LOG.info("DRY RUN: would email %s | %s", EMAIL_TO or "(unset recipient)", msg["Subject"])
         return False
-    host = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    port = int(os.getenv("SMTP_PORT", "587"))
-    user, password = os.getenv("SMTP_USER"), os.getenv("SMTP_PASSWORD")
-    if not user or not password or not EMAIL_TO:
-        LOG.error("Missing SMTP_USER, SMTP_PASSWORD or EMAIL_TO")
+    api_key = os.getenv("BREVO_API_KEY", "")
+    sender = os.getenv("BREVO_SENDER", "")
+    if not api_key or not sender or not EMAIL_TO:
+        LOG.error("Missing BREVO_API_KEY, BREVO_SENDER or EMAIL_TO")
         return False
+    html_part = msg.get_body(preferencelist=("html",))
+    text_part = msg.get_body(preferencelist=("plain",))
+    payload = {
+        "sender": {"email": sender, "name": "Pokemon Drop Hunter"},
+        "to": [{"email": EMAIL_TO}],
+        "subject": str(msg["Subject"]),
+        "htmlContent": html_part.get_content() if html_part else "<p>Pokemon drop alert</p>",
+        "textContent": text_part.get_content() if text_part else "Pokemon drop alert",
+    }
     try:
-        with smtplib.SMTP(host, port, timeout=25) as client:
-            client.starttls()
-            client.login(user, password)
-            client.send_message(msg)
-        LOG.info("SMTP accepted email: %s", msg["Subject"])
-        return True
-    except (OSError, smtplib.SMTPException) as exc:
-        LOG.error("SMTP send failed: %s", exc)
+        response = requests.post(
+            "https://api.brevo.com/v3/smtp/email",
+            headers={"api-key": api_key, "accept": "application/json", "content-type": "application/json"},
+            json=payload,
+            timeout=25,
+        )
+        if response.status_code == 201:
+            LOG.info("Brevo accepted notification: %s", msg["Subject"])
+            return True
+        LOG.error("Brevo rejected send (HTTP %s). Check approved sender, account status and quota.", response.status_code)
+        return False
+    except requests.RequestException as exc:
+        LOG.error("Brevo API request failed (%s)", exc.__class__.__name__)
         return False
 
 
