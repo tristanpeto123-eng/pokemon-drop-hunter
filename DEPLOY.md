@@ -15,3 +15,5 @@ Daily digests are handled by a separate ChatGPT automation and are not part of t
 Use [Free Pokemon Stock Watch](.github/workflows/stock-watch-free.yml) instead of Railway. See README for configuring GitHub repository secrets. The scheduled scans are best-effort and may be delayed. Do not activate emails until website stock parsing has been verified.
 
 The GitHub Action is dry-run by default, even after secrets are added. Set repository Actions variable `POKEMON_ENABLE_EMAIL=true` only once all product-page stock detections are verified.
+
+For GitHub Actions, use the Brevo API setup in README.md instead of SMTP settings. The Railway Docker option is legacy and its SMTP guidance needs updating before deploying there.
