@@ -55,6 +55,31 @@ class MonitorTests(unittest.TestCase):
             evaluate(P,e,StockSignal('IN_STOCK',''), later)
             self.assertEqual(fake_send.call_count, 2)
 
+    def test_brevo_send_accepts_valid_response(self):
+        import os
+        from unittest.mock import MagicMock
+        import monitor
+        with patch.object(monitor, 'EMAIL_ENABLED', True), patch.object(monitor, 'EMAIL_TO', 'target@example.org'):
+            with patch.dict(os.environ, {'BREVO_API_KEY':'test_key', 'BREVO_SENDER':'verified@example.org'}):
+                with patch('monitor.requests.post') as api:
+                    api.return_value.status_code = 201
+                    msg = monitor.email_message('[TEST] Brevo', 'TEST ONLY', P, 'Not a live drop.')
+                    self.assertTrue(monitor.send(msg))
+                    kw = api.call_args.kwargs
+                    self.assertEqual(kw['json']['to'][0]['email'], 'target@example.org')
+                    self.assertEqual(kw['json']['sender']['email'], 'verified@example.org')
+                    self.assertEqual(kw['headers']['api-key'], 'test_key')
+                    self.assertIn('[TEST]', kw['json']['subject'])
+
+    def test_brevo_rejection_keeps_alert_unsent(self):
+        import os
+        import monitor
+        with patch.object(monitor, 'EMAIL_ENABLED', True), patch.object(monitor, 'EMAIL_TO', 'target@example.org'):
+            with patch.dict(os.environ, {'BREVO_API_KEY':'test_key', 'BREVO_SENDER':'verified@example.org'}):
+                with patch('monitor.requests.post') as api:
+                    api.return_value.status_code = 403
+                    self.assertFalse(monitor.send(monitor.email_message('[TEST]', 'TEST', P, 'Only a test.')))
+
     def test_access_error_does_not_reset_stock(self):
         e = {'known_stock': True}
         evaluate(P,e,StockSignal('ACCESS_RESTRICTED','403'), datetime.now(timezone.utc))
