@@ -2,20 +2,20 @@
   "chaos-30th-celebration-etb": {
     "first_seen_at": "2026-11-07T01:00:23.888129+00:00",
     "known_stock": false,
-    "last_checked_at": "2026-11-14T01:32:51.384874+00:00",
+    "last_checked_at": "2026-11-14T07:57:33.666639+00:00",
     "latest_reason": "Unavailable marker without purchase control",
     "latest_signal": "OUT_OF_STOCK",
-    "negative_checks": 28,
+    "negative_checks": 29,
     "positive_checks": 0
   },
   "gameon-30th-celebration-etb": {
-    "last_checked_at": "2026-11-14T01:32:51.384874+00:00",
+    "last_checked_at": "2026-11-14T07:57:33.666639+00:00",
     "latest_reason": "Verification/invitation gate detected",
     "latest_signal": "ACCESS_RESTRICTED",
     "positive_checks": 0
   },
   "smyths-30th-celebration-etb": {
-    "last_checked_at": "2026-11-14T01:32:51.384874+00:00",
+    "last_checked_at": "2026-11-14T07:57:33.666639+00:00",
     "latest_reason": "No reliable product-level stock signal",
     "latest_signal": "UNKNOWN",
     "positive_checks": 0
